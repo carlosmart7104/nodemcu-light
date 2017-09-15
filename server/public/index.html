@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>NodeMCU WebSocketClient</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css">
+</head>
+<body>
+<div class="outer">
+  <div class="middle">
+    <div class="inner">
+        <div class="col-sm-6 col-sm-offset-3">
+        	<h2 class="text-center">Curso de Internet of Things </br><small>Mundo Mecatrónico</small></h2>
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+			    <h3 class="panel-title text-center">Sensor de iluminación con NodeMCU y WebSockets</h3>
+			  </div>
+			  <div class="panel-body">
+			    <div id="chart" style="margin: 0 auto; width: 100%; height: 100%"></div>
+			  </div>
+        <div class="panel-footer text-center">
+          Created By: carlosmart7104
+        </div>
+			</div>
+		</div>
+    </div>
+  </div>
+</div>
+</body>
+<style type="text/css" media="screen">
+.outer {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.middle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.inner {
+    margin-left: auto;
+    margin-right: auto; 
+    width: /*whatever width you want*/;
+}
+</style>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script>
+  var L = 0, Lista = [{light: L, value: 0}];
+  var graph = new Morris.Line({
+    // ID of the element in which to draw the chart.
+    element: 'chart',
+    // Chart data records -- each entry in this array corresponds to a point on
+    // the chart.
+    data: Lista,
+    ymax: 1024,
+    ymin: 0,
+    lineWidth: 2,
+    pointSize: 2,
+    hideHover: 'always',
+    // The name of the data record attribute that contains x-values.
+    xkey: 'light',
+    // A list of names of data record attributes that contain y-values.
+    ykeys: ['value'],
+    // Labels for the ykeys -- will be displayed when you hover over the
+    // chart.
+    labels: ['light']
+  });
+
+  var connection = new WebSocket('ws://nodemcu-mecatronico.rhcloud.com:8000');
+
+  connection.onopen = function () {
+  	console.log('ws: connection');
+    connection.send('ping'); // Send the message 'Ping' to the server
+
+  };
+
+  connection.onmessage = function (e) {
+    //console.log('Server: ' + e.data);
+    if (L >= 15){
+      Lista.shift();
+    }
+    Lista.push({light: ++L, value: e.data});
+
+    setTimeout(function () {
+	  //console.log(Lista);
+	  graph.setData(Lista);
+	}, 100);
+  };
+
+</script>
+</html>
